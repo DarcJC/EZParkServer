@@ -18,7 +18,7 @@ def dev(
         reload: Optional[bool] = True,
 ):
     import uvicorn
-    uvicorn.run("core:app", host=host, port=port, log_level="info", reload=reload, workers=1)
+    uvicorn.run("core.app:app", host=host, port=port, log_level="info", reload=reload, workers=1)
 
 
 @app.command("setup", help="初始化运行环境, 初次运行前调用")
