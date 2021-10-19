@@ -20,7 +20,7 @@ class ClientToken(Model):
         return hashlib.sha256(pure_token).hexdigest()
 
 
-async def authenticate(_uuid: str, token: str) -> Union[None, ClientToken]:
+async def authenticate(_uuid: uuid.UUID, token: str) -> ClientToken:
     """
     验证客户端凭据
     如果正确会返回一个`ClientToken` 否则返回`None`
@@ -29,7 +29,7 @@ async def authenticate(_uuid: str, token: str) -> Union[None, ClientToken]:
     :return:
     """
     encrypted_token = ClientToken.encrypt_token(token)
-    return await ClientToken.get_or_none(uuid=_uuid, token=encrypted_token)
+    return await ClientToken.get(uuid=_uuid, token=encrypted_token)
 
 
 async def generate_client_token() -> Tuple[uuid.UUID, str]:
