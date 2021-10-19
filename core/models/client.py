@@ -17,7 +17,7 @@ class ClientToken(Model):
 
     @staticmethod
     def encrypt_token(pure_token: str) -> constr(max_length=256):
-        return hashlib.sha256(pure_token).hexdigest()
+        return hashlib.sha256(pure_token.encode('utf-8')).hexdigest()
 
 
 async def authenticate(_uuid: uuid.UUID, token: str) -> ClientToken:

@@ -14,7 +14,7 @@ class NewClientTokenResponse(BaseModel):
     token: constr(min_length=128)
 
 
-@router.put("/client", description="创建一个客户端凭据", response_model=NewClientTokenResponse)
+@router.put("/client", description="创建一个客户端凭据", response_model=NewClientTokenResponse, status_code=201)
 async def client_token(
     _: bool = Depends(require_admin_token),
 ):
