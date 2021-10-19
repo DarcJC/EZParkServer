@@ -1,4 +1,7 @@
 from .app import app
+from .settings import EnvironmentSettings
 
 
-__all__ = ['app']
+settings = EnvironmentSettings()
+
+__all__ = ['app', 'settings', ]

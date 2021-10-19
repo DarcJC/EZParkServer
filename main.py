@@ -5,6 +5,8 @@ from typing import Optional
 import typer
 from tortoise import Tortoise, run_async
 
+from core import settings
+
 app = typer.Typer()
 
 
@@ -23,7 +25,7 @@ def dev(
 def setup():
     async def task():
         await Tortoise.init(
-            db_url="",
+            db_url=settings.DATABASE_URI,
             modules={
                 "models": ["core.models"],
             },
