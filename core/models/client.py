@@ -36,3 +36,8 @@ async def generate_client_token() -> Tuple[uuid.UUID, str]:
     pure_token = ''.join(random.choices(string.ascii_letters + string.digits, k=128))
     obj = await ClientToken.create(token=ClientToken.encrypt_token(pure_token))
     return obj.uuid, pure_token
+
+
+async def deactivate_client_token(_uuid: uuid.UUID) -> None:
+    obj = await ClientToken.get(uuid=_uuid)
+    obj.valid = False

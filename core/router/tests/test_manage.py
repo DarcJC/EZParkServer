@@ -20,11 +20,17 @@ class EZAdminAuth(requests.auth.AuthBase):
 
 
 class TestManageEndpointSuccess(unittest.TestCase):
-
     token = settings.ADMIN_TOKEN
 
     def test_001_generate_client_token(self):
         with TestClient(app) as client:
-            resp = client.put("/manage/client", auth=EZAdminAuth(self.token))
-            _ = NewClientTokenResponse(**resp.json())
+            resp = client.put("/manage/client_token", auth=EZAdminAuth(self.token))
+            res = NewClientTokenResponse(**resp.json())
+            self.__class__.uuid = res.uuid
             self.assertEqual(resp.status_code, 201)
+
+    def test_002_deactivate_client_token(self):
+        with TestClient(app) as client:
+            resp = client.delete("/manage/client_token", auth=EZAdminAuth(self.token),
+                                 json=dict(uuid=self.__class__.uuid.__str__()))
+            self.assertEqual(resp.status_code, 204)
