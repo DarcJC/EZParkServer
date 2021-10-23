@@ -34,3 +34,9 @@ class FeeRecord(Model):
     based_rule: fields.ForeignKeyRelation[FeeRule] = fields.ForeignKeyField(
         model_name='models.FeeRule', related_name='related_records', on_delete=fields.RESTRICT,
     )
+
+
+class EntryLog(Model):
+    id = fields.BigIntField(pk=True)
+    start_time = fields.DatetimeField(auto_now_add=True)
+    end_time = fields.DatetimeField(null=True, default=None)
