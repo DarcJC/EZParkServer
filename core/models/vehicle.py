@@ -14,6 +14,7 @@ class VehicleInfo(Model):
     type = fields.IntEnumField(VehicleType, default=VehicleType.UNKNOWN, description="车辆类型")
     fee_records: fields.ReverseRelation["FeeRecord"]
     entry_records: fields.ReverseRelation['EntryLog']
+    operation_logs: fields.ReverseRelation['AuditLog']
 
 
 class FeeRule(Model):

@@ -1,3 +1,4 @@
+import enum
 import hashlib
 import random
 import string
@@ -14,6 +15,7 @@ class ClientToken(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     access_at = fields.DatetimeField(default=None, null=True)
     valid = fields.BooleanField(default=True)
+    audit_logs: fields.ReverseRelation['AuditLog']
 
     @staticmethod
     def encrypt_token(pure_token: str) -> constr(max_length=256):
@@ -41,3 +43,19 @@ async def generate_client_token() -> Tuple[uuid.UUID, str]:
 async def deactivate_client_token(_uuid: uuid.UUID) -> None:
     obj = await ClientToken.get(uuid=_uuid)
     obj.valid = False
+
+
+class ActionType(enum.IntEnum):
+    VEHICLE_ENTRY = 0
+    VEHICLE_LEAVE = 1
+
+
+class AuditLog(Model):
+    id = fields.BigIntField(pk=True)
+    belongs_to: fields.ForeignKeyRelation[ClientToken] = fields.ForeignKeyField(
+        model_name='models.ClientToken', related_name='audit_logs',
+    )
+    action = fields.IntEnumField(ActionType)
+    related_to: fields.ForeignKeyRelation['VehicleInfo'] = fields.ForeignKeyField(
+        model_name='models.VehicleInfo', related_name='operation_logs',
+    )
