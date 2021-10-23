@@ -27,15 +27,25 @@ class EZClientAuth(requests.auth.AuthBase):
 class TestClientEndpointSuccess(IsolatedAsyncioTestCase):
 
     ut_pair: Tuple[UUID, str]
+    plate: str
 
     async def asyncSetUp(self) -> None:
         with TestClient(app) as _:
             self.__class__.ut_pair = await generate_client_token()
+            self.__class__.plate = ''.join(random.choices(string.ascii_letters, k=8))
 
     async def test_001_vehicle_entry(self):
         with TestClient(app) as client:
             uid, token = self.__class__.ut_pair
             resp = client.put('/client/entry', params=dict(
-                vehicle_plate=''.join(random.choices(string.ascii_letters, k=8)),
+                vehicle_plate=self.__class__.plate,
             ), auth=EZClientAuth(uid, token))
             self.assertEqual(resp.status_code, 201)
+
+    async def test_002_vehicle_entry(self):
+        with TestClient(app) as client:
+            uid, token = self.__class__.ut_pair
+            resp = client.delete('/client/entry', params=dict(
+                vehicle_plate=self.__class__.plate,
+            ), auth=EZClientAuth(uid, token))
+            self.assertEqual(resp.status_code, 200)

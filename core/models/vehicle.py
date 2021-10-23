@@ -1,8 +1,11 @@
 import enum
+from datetime import datetime
 
 from pydantic import constr
 from tortoise import Model, fields
 from tortoise.contrib.pydantic import pydantic_model_creator
+from tortoise.exceptions import DoesNotExist
+from tortoise.queryset import QuerySet
 
 
 class VehicleType(enum.IntEnum):
@@ -56,3 +59,12 @@ async def add_entry_log(vehicle_plate: constr(max_length=32, to_lower=True)) -> 
     vehicle_info, _ = await VehicleInfo.get_or_create(plate=vehicle_plate)
     return await EntryLog.create(belongs_to=vehicle_info)
 
+
+async def add_leave_log(vehicle_plate: constr(max_length=32, to_lower=True)) -> EntryLog:
+    vehicle_info, _ = await VehicleInfo.get_or_create(plate=vehicle_plate)
+    query_set: QuerySet[EntryLog] = vehicle_info.entry_records.filter(end_time=None)
+    if query_set.count() == 0:
+        raise DoesNotExist()
+    cache = await query_set.first()
+    await query_set.update(end_time=datetime.now())
+    return await EntryLog.get(id=cache.id)
