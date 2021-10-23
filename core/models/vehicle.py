@@ -1,6 +1,8 @@
 import enum
 
+from pydantic import constr
 from tortoise import Model, fields
+from tortoise.contrib.pydantic import pydantic_model_creator
 
 
 class VehicleType(enum.IntEnum):
@@ -10,7 +12,7 @@ class VehicleType(enum.IntEnum):
 
 class VehicleInfo(Model):
     id = fields.BigIntField(pk=True)
-    plate = fields.CharField(max_length=32, description="车牌信息")
+    plate = fields.CharField(max_length=32, index=True, unique=True, description="车牌信息")
     type = fields.IntEnumField(VehicleType, default=VehicleType.UNKNOWN, description="车辆类型")
     fee_records: fields.ReverseRelation["FeeRecord"]
     entry_records: fields.ReverseRelation['EntryLog']
@@ -45,3 +47,12 @@ class EntryLog(Model):
     )
     start_time = fields.DatetimeField(auto_now_add=True)
     end_time = fields.DatetimeField(null=True, default=None)
+
+
+EntryLogSchemaLite = pydantic_model_creator(EntryLog)
+
+
+async def add_entry_log(vehicle_plate: constr(max_length=32, to_lower=True)) -> EntryLog:
+    vehicle_info, _ = await VehicleInfo.get_or_create(plate=vehicle_plate)
+    return await EntryLog.create(belongs_to=vehicle_info)
+

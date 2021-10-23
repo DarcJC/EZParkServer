@@ -5,6 +5,7 @@ import string
 import uuid
 from typing import Union, Tuple
 
+from fastapi import Depends
 from pydantic import constr
 from tortoise import Model, fields
 
@@ -57,5 +58,5 @@ class AuditLog(Model):
     )
     action = fields.IntEnumField(ActionType)
     related_to: fields.ForeignKeyRelation['VehicleInfo'] = fields.ForeignKeyField(
-        model_name='models.VehicleInfo', related_name='operation_logs',
+        model_name='models.VehicleInfo', related_name='operation_logs', on_delete=fields.RESTRICT,
     )
