@@ -13,6 +13,7 @@ class VehicleInfo(Model):
     plate = fields.CharField(max_length=32, description="车牌信息")
     type = fields.IntEnumField(VehicleType, default=VehicleType.UNKNOWN, description="车辆类型")
     fee_records: fields.ReverseRelation["FeeRecord"]
+    entry_records: fields.ReverseRelation['EntryLog']
 
 
 class FeeRule(Model):
@@ -38,5 +39,8 @@ class FeeRecord(Model):
 
 class EntryLog(Model):
     id = fields.BigIntField(pk=True)
+    belongs_to: fields.ForeignKeyRelation[VehicleInfo] = fields.ForeignKeyField(
+        model_name='models.VehicleInfo', related_name='entry_records',
+    )
     start_time = fields.DatetimeField(auto_now_add=True)
     end_time = fields.DatetimeField(null=True, default=None)
