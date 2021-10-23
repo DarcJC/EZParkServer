@@ -9,6 +9,7 @@ from starlette.testclient import TestClient
 
 from core.app import app
 from core.models.client import generate_client_token
+from core.models.vehicle import EntryLogSchemaLite
 
 
 class EZClientAuth(requests.auth.AuthBase):
@@ -41,6 +42,7 @@ class TestClientEndpointSuccess(IsolatedAsyncioTestCase):
                 vehicle_plate=self.__class__.plate,
             ), auth=EZClientAuth(uid, token))
             self.assertEqual(resp.status_code, 201)
+            EntryLogSchemaLite(**resp.json())
 
     async def test_002_vehicle_entry(self):
         with TestClient(app) as client:
@@ -49,3 +51,4 @@ class TestClientEndpointSuccess(IsolatedAsyncioTestCase):
                 vehicle_plate=self.__class__.plate,
             ), auth=EZClientAuth(uid, token))
             self.assertEqual(resp.status_code, 200)
+            EntryLogSchemaLite(**resp.json())
