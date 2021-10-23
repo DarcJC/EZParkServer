@@ -23,6 +23,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install coverage
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Setup database
+        run: |
+          python main.py setup
       - name: Coverage test
         run: |
           coverage run -m unittest
