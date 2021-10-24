@@ -1,10 +1,13 @@
+from decimal import Decimal
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, constr, conint, condecimal
 
 from core.dependencies import require_admin_token
 from core.models.client import generate_client_token, deactivate_client_token
+from core.models.vehicle import VehicleType, add_fee_rule, FeeRuleSchemaLite
 
 router = APIRouter(prefix="/manage", tags=["管理"])
 
@@ -33,3 +36,17 @@ async def client_token(
 ):
     await deactivate_client_token(payload.uuid)
     return None
+
+
+class AddFeeRuleModel(BaseModel):
+    vehicle_type: VehicleType
+    unit_fee: condecimal(ge=Decimal(value='1'))
+    priority: Optional[conint(ge=-16, le=15)] = 0
+
+
+@router.put("/fee_rule", description='添加收费规则', status_code=201, response_model=FeeRuleSchemaLite)
+async def fee_rule(
+        payload: AddFeeRuleModel,
+        _: bool = Depends(require_admin_token),
+):
+    return await FeeRuleSchemaLite.from_tortoise_orm(await add_fee_rule(**payload.dict(exclude_unset=True)))

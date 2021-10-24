@@ -1,3 +1,4 @@
+import random
 import unittest
 
 import requests.auth
@@ -5,6 +6,7 @@ from starlette.testclient import TestClient
 
 from core import settings
 from core.app import app
+from core.models.vehicle import VehicleType, FeeRuleSchemaLite
 from core.router.manage import NewClientTokenResponse
 
 
@@ -34,3 +36,14 @@ class TestManageEndpointSuccess(unittest.TestCase):
             resp = client.delete("/manage/client_token", auth=EZAdminAuth(self.token),
                                  json=dict(uuid=self.__class__.uuid.__str__()))
             self.assertEqual(resp.status_code, 204)
+
+    def test_003_create_new_fee_rule(self):
+        with TestClient(app) as client:
+            resp = client.put("/manage/fee_rule", auth=EZAdminAuth(self.token),
+                              json=dict(
+                                  vehicle_type=VehicleType.TESTING,
+                                  unit_fee=random.randint(0, 256),
+                                  priority=random.randint(-16, 15)
+                              ))
+            self.assertEqual(resp.status_code, 201)
+            FeeRuleSchemaLite(**resp.json())

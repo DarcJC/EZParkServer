@@ -1,5 +1,6 @@
 import enum
 from datetime import datetime
+from decimal import Decimal
 
 from pydantic import constr
 from tortoise import Model, fields
@@ -9,6 +10,7 @@ from tortoise.queryset import QuerySet
 
 
 class VehicleType(enum.IntEnum):
+    TESTING = -1
     UNKNOWN = 0
     CAR = 1
 
@@ -29,6 +31,10 @@ class FeeRule(Model):
     unit_fee = fields.DecimalField(max_digits=5, decimal_places=2, description="每分钟的费用 单位CNY")
     valid = fields.BooleanField(default=True, description="是否有效")
     related_records: fields.ReverseRelation['FeeRecord']
+
+
+async def add_fee_rule(vehicle_type: VehicleType, unit_fee: Decimal, priority: int = 0) -> FeeRule:
+    return await FeeRule.create(vehicle_type=vehicle_type, unit_fee=unit_fee, priority=priority)
 
 
 class FeeRecord(Model):
@@ -68,3 +74,6 @@ async def add_leave_log(vehicle_plate: constr(max_length=32, to_lower=True)) -> 
     cache = await query_set.first()
     await query_set.update(end_time=datetime.now())
     return await EntryLog.get(id=cache.id)
+
+
+FeeRuleSchemaLite = pydantic_model_creator(FeeRule)
