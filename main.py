@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 import signal
+from decimal import Decimal
 from typing import Optional
 
 import typer
 from tortoise import Tortoise, run_async
 
 from core import settings
+from core.models.vehicle import add_fee_rule, VehicleType
 
 app = typer.Typer()
 
@@ -31,6 +33,7 @@ def setup():
             },
         )
         await Tortoise.generate_schemas()
+        await add_fee_rule(VehicleType.TESTING, Decimal('0.025'))
 
     run_async(task())
 
