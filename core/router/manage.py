@@ -25,16 +25,12 @@ async def client_token(
     return NewClientTokenResponse(uuid=uuid, token=token)
 
 
-class DeleteClientTokenResponse(BaseModel):
-    uuid: UUID
-
-
-@router.delete("/client_token", description="将客户端凭据标记为无效", status_code=204)
+@router.delete("/client_token/{ct_id}", description="将客户端凭据标记为无效", status_code=204)
 async def client_token(
-    payload: DeleteClientTokenResponse,
+    ct_id: UUID,
     _: bool = Depends(require_admin_token),
 ):
-    await deactivate_client_token(payload.uuid)
+    await deactivate_client_token(ct_id)
     return None
 
 
@@ -50,3 +46,10 @@ async def fee_rule(
         _: bool = Depends(require_admin_token),
 ):
     return await FeeRuleSchemaLite.from_tortoise_orm(await add_fee_rule(**payload.dict(exclude_unset=True)))
+
+
+@router.delete("/fee_rule/{fid}", description='将收费规则标记为无效', status_code=204)
+async def fee_rule(
+    fid: int,
+):
+    pass

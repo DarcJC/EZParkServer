@@ -33,8 +33,7 @@ class TestManageEndpointSuccess(unittest.TestCase):
 
     def test_002_deactivate_client_token(self):
         with TestClient(app) as client:
-            resp = client.delete("/manage/client_token", auth=EZAdminAuth(self.token),
-                                 json=dict(uuid=self.__class__.uuid.__str__()))
+            resp = client.delete(f"/manage/client_token/{self.__class__.uuid}", auth=EZAdminAuth(self.token),)
             self.assertEqual(resp.status_code, 204)
 
     def test_003_create_new_fee_rule(self):
