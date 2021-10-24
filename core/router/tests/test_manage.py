@@ -45,4 +45,10 @@ class TestManageEndpointSuccess(unittest.TestCase):
                                   priority=random.randint(-16, 15)
                               ))
             self.assertEqual(resp.status_code, 201)
-            FeeRuleSchemaLite(**resp.json())
+            res = FeeRuleSchemaLite(**resp.json())
+            self.__class__.fee_rule_id = res.id
+            
+    def test_004_deactivate_fee_rule(self):
+        with TestClient(app) as client:
+            resp = client.delete(f'/manage/fee_rule/{self.__class__.fee_rule_id}', auth=EZAdminAuth(self.token))
+            self.assertEqual(resp.status_code, 204)

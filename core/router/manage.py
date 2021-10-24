@@ -7,7 +7,7 @@ from pydantic import BaseModel, constr, conint, condecimal
 
 from core.dependencies import require_admin_token
 from core.models.client import generate_client_token, deactivate_client_token
-from core.models.vehicle import VehicleType, add_fee_rule, FeeRuleSchemaLite
+from core.models.vehicle import VehicleType, add_fee_rule, FeeRuleSchemaLite, deactivate_fee_rule
 
 router = APIRouter(prefix="/manage", tags=["管理"])
 
@@ -52,4 +52,5 @@ async def fee_rule(
 async def fee_rule(
     fid: int,
 ):
-    pass
+    await deactivate_fee_rule(fid)
+    return None

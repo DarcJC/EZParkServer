@@ -37,6 +37,13 @@ async def add_fee_rule(vehicle_type: VehicleType, unit_fee: Decimal, priority: i
     return await FeeRule.create(vehicle_type=vehicle_type, unit_fee=unit_fee, priority=priority)
 
 
+async def deactivate_fee_rule(fid: int) -> FeeRule:
+    fee_rule = await FeeRule.get(id=fid)
+    fee_rule.valid = False
+    await fee_rule.save()
+    return fee_rule
+
+
 class FeeRecord(Model):
     id = fields.UUIDField(pk=True)
     belongs_to: fields.ForeignKeyRelation[VehicleInfo] = fields.ForeignKeyField(
