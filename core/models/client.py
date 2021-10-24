@@ -49,6 +49,7 @@ async def deactivate_client_token(_uuid: uuid.UUID) -> None:
 class ActionType(enum.IntEnum):
     VEHICLE_ENTRY = 0
     VEHICLE_LEAVE = 1
+    GENERATE_ORDER = 2
 
 
 class AuditLog(Model):
