@@ -1,6 +1,7 @@
 import enum
 from decimal import Decimal
 
+from fastapi import HTTPException
 from pydantic import constr, conint
 from tortoise import Model, fields, timezone
 from tortoise.contrib.pydantic import pydantic_model_creator
@@ -76,7 +77,9 @@ class EntryLog(Model):
 async def generate_fee_record(entry_log_id: conint(ge=0)) -> FeeRecord:
     entry_log = await EntryLog.get(id=entry_log_id)
     if entry_log.end_time is None:
-        raise ValidationError()
+        raise HTTPException(406, dict(
+            detail='target entry_log has no end time',
+        ))
     fee_rule = await get_fee_rule((await entry_log.belongs_to).type)
     diff = entry_log.end_time - entry_log.start_time
     time_parked = diff.total_seconds()
@@ -99,9 +102,9 @@ async def add_entry_log(vehicle_plate: constr(max_length=32, to_lower=True)) -> 
 async def add_leave_log(vehicle_plate: constr(max_length=32, to_lower=True)) -> EntryLog:
     vehicle_info, _ = await VehicleInfo.get_or_create(plate=vehicle_plate)
     query_set: QuerySet[EntryLog] = vehicle_info.entry_records.filter(end_time=None)
-    if query_set.count() == 0:
-        raise DoesNotExist()
     cache = await query_set.first()
+    if cache is None:
+        raise DoesNotExist()
     await query_set.update(end_time=timezone.now())
     return await EntryLog.get(id=cache.id)
 

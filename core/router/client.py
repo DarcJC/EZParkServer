@@ -35,6 +35,6 @@ async def order(
 ):
     if (await (await fee_record.belongs_to).belongs_to).plate != (await audit_log.related_to).plate:
         raise HTTPException(400, dict(
-            msg="plate not matched",
+            detail="plate not matched",
         ))
     return await FeeRecordSchema.from_tortoise_orm(fee_record)

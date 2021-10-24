@@ -1,4 +1,5 @@
 import random
+import string
 import unittest
 
 import requests.auth
@@ -21,7 +22,7 @@ class EZAdminAuth(requests.auth.AuthBase):
         return request
 
 
-class TestManageEndpointSuccess(unittest.TestCase):
+class TestManageEndpoint(unittest.TestCase):
     token = settings.ADMIN_TOKEN
 
     def test_001_generate_client_token(self):
@@ -52,3 +53,8 @@ class TestManageEndpointSuccess(unittest.TestCase):
         with TestClient(app) as client:
             resp = client.delete(f'/manage/fee_rule/{self.__class__.fee_rule_id}', auth=EZAdminAuth(self.token))
             self.assertEqual(resp.status_code, 204)
+
+    def test_005_bad_admin_token(self):
+        with TestClient(app) as client:
+            resp = client.put("/manage/client_token", auth=EZAdminAuth(''.join(random.choices(string.printable, k=32))))
+            self.assertEqual(resp.status_code, 400)
