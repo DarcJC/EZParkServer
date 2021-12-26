@@ -6,7 +6,7 @@ from typing import Optional
 import typer
 from tortoise import Tortoise, run_async
 
-from core import settings
+from core.conf import settings
 from core.models.vehicle import add_fee_rule, VehicleType
 
 app = typer.Typer()

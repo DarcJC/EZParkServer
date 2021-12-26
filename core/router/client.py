@@ -1,6 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import ValidationError
+from typing import List, Dict
 
+import aiohttp
+from fastapi import APIRouter, Depends, HTTPException, Body
+from pydantic import ValidationError, BaseModel, parse_obj_as
+
+from core.conf import settings
 from core.dependencies import get_current_client, add_audit_log
 from core.models import ClientToken, AuditLog, FeeRecordSchema
 from core.models.client import ActionType
@@ -38,3 +42,37 @@ async def order(
             detail="plate not matched",
         ))
     return await FeeRecordSchema.from_tortoise_orm(fee_record)
+
+
+class PlateResponse(BaseModel):
+    class ResultItem(BaseModel):
+        class XYPair(BaseModel):
+            x: int
+            y: int
+        color: int
+        license_plate_number: str
+        bound: Dict[str, XYPair]
+    image_id: str
+    request_id: str
+    time_used: int
+    results: List[ResultItem]
+
+
+@router.post('/detect_plate', description='识别车牌', response_model=PlateResponse)
+async def detect_plate(
+        imageb64: str = Body(""),
+):
+    if imageb64 == "":
+        return HTTPException(400, dict(detail="invaild image"))
+    form = aiohttp.FormData()
+    form.add_field("api_key", settings.API_KEY)
+    form.add_field("api_secret", settings.API_SECRET)
+    form.add_field("image_base64", imageb64)
+    async with aiohttp.request(
+            "POST",
+            "https://api-cn.faceplusplus.com/imagepp/v1/licenseplate",
+            data=form,
+    ) as resp:
+        res = parse_obj_as(PlateResponse, await resp.json())
+        return res
+

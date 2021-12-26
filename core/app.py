@@ -5,7 +5,8 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from tortoise.contrib.fastapi import register_tortoise
 
-from core import router, settings
+from core import router
+from core.conf import settings
 from core.dependencies import InvalidTokenError
 
 

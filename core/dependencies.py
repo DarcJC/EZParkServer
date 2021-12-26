@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import Depends
 from pydantic import constr
 
-from core import settings
+from core.conf import settings
 from core.models import client, VehicleInfo
 from core.models.client import ActionType, ClientToken, AuditLog
 from core.models.vehicle import VehicleType
