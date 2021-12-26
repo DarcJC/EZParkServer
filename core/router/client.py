@@ -1,8 +1,12 @@
+import base64
 from typing import List, Dict
 
 import aiohttp
 from fastapi import APIRouter, Depends, HTTPException, Body
-from pydantic import ValidationError, BaseModel, parse_obj_as
+from pydantic import ValidationError, BaseModel, parse_obj_as, conlist
+import numpy as np
+import cv2
+from hyperlpr import HyperLPR_plate_recognition
 
 from core.conf import settings
 from core.dependencies import get_current_client, add_audit_log
@@ -46,15 +50,9 @@ async def order(
 
 class PlateResponse(BaseModel):
     class ResultItem(BaseModel):
-        class XYPair(BaseModel):
-            x: int
-            y: int
-        color: int
         license_plate_number: str
-        bound: Dict[str, XYPair]
-    image_id: str
-    request_id: str
-    time_used: int
+        confidence: int
+        bound: conlist(int, min_items=4, max_items=4)
     results: List[ResultItem]
 
 
@@ -64,15 +62,24 @@ async def detect_plate(
 ):
     if imageb64 == "":
         return HTTPException(400, dict(detail="invaild image"))
-    form = aiohttp.FormData()
-    form.add_field("api_key", settings.API_KEY)
-    form.add_field("api_secret", settings.API_SECRET)
-    form.add_field("image_base64", imageb64)
-    async with aiohttp.request(
-            "POST",
-            "https://api-cn.faceplusplus.com/imagepp/v1/licenseplate",
-            data=form,
-    ) as resp:
-        res = parse_obj_as(PlateResponse, await resp.json())
-        return res
+    # base64 to mat
+    bytedata = base64.b64decode(imageb64)
+    npimg = np.fromstring(bytedata, dtype=np.uint8)
+    matimg = cv2.imdecode(npimg, 1)
+    result = HyperLPR_plate_recognition(matimg)
+    results = []
+    for i in result:
+        results.append(PlateResponse.ResultItem(license_plate_number=i[0], confidence=i[1], bound=i[2]))
+    return PlateResponse(results=results)
+    # form = aiohttp.FormData()
+    # form.add_field("api_key", settings.API_KEY)
+    # form.add_field("api_secret", settings.API_SECRET)
+    # form.add_field("image_base64", imageb64)
+    # async with aiohttp.request(
+    #         "POST",
+    #         "https://api-cn.faceplusplus.com/imagepp/v1/licenseplate",
+    #         data=form,
+    # ) as resp:
+    #     res = parse_obj_as(PlateResponse, await resp.json())
+    #     return res
 

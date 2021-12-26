@@ -5,8 +5,8 @@ from pydantic import BaseSettings
 class EnvironmentSettings(BaseSettings):
     DATABASE_URI: Optional[str] = "sqlite://db.sqlite3"
     ADMIN_TOKEN: str
-    API_KEY: str
-    API_SECRET: str
+    # API_KEY: str
+    # API_SECRET: str
 
     class Config:
         env_file = ".env"

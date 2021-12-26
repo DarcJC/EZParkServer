@@ -5,3 +5,5 @@ typer~=0.4.0
 tortoise-orm~=0.17.8
 starlette~=0.16.0
 requests~=2.26.0
+hyperlpr~=0.0.2
+numpy~=1.21.5
